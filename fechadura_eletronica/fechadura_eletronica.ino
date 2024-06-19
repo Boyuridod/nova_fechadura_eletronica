@@ -65,7 +65,7 @@ unsigned long count = 0;
 // Início do código
 
 void setup() {
-  Serial.begin(115200);                           // Inicia a comunicação com o Serial | Padrão: 9600 bps | Usando: 115200 bps
+  Serial.begin(9600);                           // Inicia a comunicação com o Serial | Padrão: 9600 bps | Usando: 115200 bps
 
   SPI.begin();         // Init SPI bus
   mfrc522.PCD_Init();  // Init MFRC522
@@ -90,20 +90,20 @@ void setup() {
 
 void loop() {
 
-  // Defina o caminho do nó
-  String path = "/ChavesCadastradas/-O-XhGQQqwWPdecsGw1-";
+  // // Defina o caminho do nó
+  // String path = "/ChavesCadastradas/-O-XhGQQqwWPdecsGw1-";
 
-  // Obtenha os dados do Firebase
-  if (Firebase.RTDB.getString(&fbdo, path + "/codChave")) {
-    if (fbdo.dataType() == "string") {
-      Serial.println("codChave: " + fbdo.stringData());
-    }
-  } else {
-    Serial.println("Erro ao obter dados: " + fbdo.errorReason());
-  }
+  // // Obtenha os dados do Firebase
+  // if (Firebase.RTDB.getString(&fbdo, path + "/codChave")) {
+  //   if (fbdo.dataType() == "string") {
+  //     Serial.println("codChave: " + fbdo.stringData());
+  //   }
+  // } else {
+  //   Serial.println("Erro ao obter dados: " + fbdo.errorReason());
+  // }
 
-  // Aguarde antes de ler novamente
-  delay(5000);
+  // // Aguarde antes de ler novamente
+  // delay(5000);
 
   // portaIsFechada = digitalRead(Sensor_Porta);
 
