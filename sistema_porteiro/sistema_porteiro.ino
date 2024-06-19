@@ -28,6 +28,9 @@ MFRC522::MIFARE_Key key;
 #define Sensor_Porta D4  // Fio do Sensor Magnético | O outro vai no GND
 int portaIsFechada = 1;
 
+// Campainha
+#define Campainha D3
+
 
 
 // Para conexão com Wi-Fi
@@ -35,8 +38,11 @@ int portaIsFechada = 1;
 // const char* ssid = "Inside The Forest";  // Nome da rede
 // const char* password = "youarealone";    // Senha da rede
 
-const char* ssid = "S23 Ultra de Vinicius Gabriel";         // Nome da rede
-const char* password = "pcgkkdr9y54r5qn";                  // Senha da rede
+// const char* ssid = "S23 Ultra de Vinicius Gabriel";         // Nome da rede
+// const char* password = "pcgkkdr9y54r5qn";                  // Senha da rede
+
+const char* ssid = "BugWare";       // Nome da rede
+const char* password = "ej#bw@23";  // Senha da rede
 
 
 
@@ -70,7 +76,11 @@ unsigned long count = 0;
 void setup() {
   Serial.begin(9600);  // Inicia a comunicação com o Serial | Padrão: 9600 bps | Usando: 115200 bps
 
+  Serial.println("Teste");
+
   conecta_wifi();  // Chama a função que irá conectar no WIFi
+
+  Serial.println("Teste2");
 
   conecta_firebase();  // Chama a função que irá conectar no FIREBASE
 
@@ -78,9 +88,10 @@ void setup() {
   mfrc522.PCD_Init();  // Init MFRC522
 
   //Setando os pinos
-  pinMode(FechaduraPinA, OUTPUT);  // Configura D1 como saida
-  pinMode(FechaduraPinB, OUTPUT);  // Configura D2 como saida
-  pinMode(Sensor_Porta, INPUT_PULLUP);
+  pinMode(FechaduraPinA, OUTPUT);       // Configura D1 como saida
+  pinMode(FechaduraPinB, OUTPUT);       // Configura D2 como saida
+  pinMode(Sensor_Porta, INPUT_PULLUP);  //Configura D4 como entrada
+  pinMode(Campainha, INPUT_PULLUP);     //Configura D3 como entrada
 
   //Inicializando os pinos
   digitalWrite(FechaduraPinA, LOW);  //Configuração para fechar a fechadura
@@ -90,6 +101,13 @@ void setup() {
 }
 
 void loop() {
+
+  if (digitalRead(Campainha)) {
+
+    Serial.println("Tem gente na porta");
+
+    delay(3000);
+  }
 
   if (Firebase.ready()) {
 
@@ -135,19 +153,19 @@ void loop() {
         Serial.println("Código não encontrado no Firebase.");
         // Serial.println(fbdo.errorReason());
       }
+
+      delay(5000);
+
+      while (portaIsFechada) {
+
+        // Confere se a porta está fechada | 0 é fechada | 1 é aberta
+        portaIsFechada = digitalRead(Sensor_Porta);
+
+        delay(1000);
+      }
+
+      fecha_fechadura();
     }
-
-    delay(5000);
-
-    while(portaIsFechada){
-
-      // Confere se a porta está fechada | 0 é fechada | 1 é aberta
-      portaIsFechada = digitalRead(Sensor_Porta);
-
-    }
-
-    fecha_fechadura();
-
   }
 }
 
@@ -164,7 +182,6 @@ void conecta_wifi() {
 
     delay(500);
     Serial.print(".");
-
   }
 
   Serial.println("");                         //PULA UMA LINHA NA JANELA SERIAL
