@@ -3,10 +3,8 @@
 #include <Wire.h>                 // Inclui a biblioteca Wire.h
 #include <MFRC522.h>              // Inclui a biblioteca do sensor RFID
 #include <Firebase_ESP_Client.h>  // Inclui a biblioteca que faz conexão com Firebase
-// Provide the token generation process info.
-#include <addons/TokenHelper.h>
-// Provide the RTDB payload printing info and other helper functions.
-#include <addons/RTDBHelper.h>
+#include <addons/TokenHelper.h>   // Fornece informações sobre geração de token.
+#include <addons/RTDBHelper.h>    // Fornece informações sobre payload do RTDB e outras funções auxiliares.
 
 // Definição das Portas
 
@@ -17,7 +15,7 @@
 #define RFID_MOSI D7  // MOSI do RFID
 #define RFID_SDA D8   // SDA do RFID
 
-MFRC522 mfrc522(RFID_SDA, RFID_RST);  // Create MFRC522 instance.
+MFRC522 mfrc522(RFID_SDA, RFID_RST);  // Cria instância do MFRC522
 MFRC522::MIFARE_Key key;
 
 // Fechadura
@@ -57,6 +55,13 @@ FirebaseConfig config;
 
 unsigned long sendDataPrevMillis = 0;
 unsigned long count = 0;
+
+void conecta_wifi();
+void conecta_firebase();
+void verifica_abrePorta();
+void abre_fechadura();
+void fecha_fechadura();
+void verifica_SigningUp();
 
 // Código
 
@@ -152,6 +157,8 @@ void loop() {
       fecha_fechadura();
     }
   }
+  // Verifica a variável SigningUp no Firebase
+  verifica_SigningUp();
 }
 
 // Funções
@@ -232,12 +239,35 @@ void verifica_abrePorta() {
         delay(1000);
       }
 
-      //
+      fecha_fechadura();
     } else {
       fecha_fechadura();
     }
   } else {
     Serial.println("Falha ao obter o valor de abrePorta do Firebase.");
+    Serial.println(fbdo.errorReason());
+  }
+}
+
+void verifica_SigningUp() {
+  if (Firebase.RTDB.getInt(&fbdo, "/SigningUp")) {
+    int signingUp = fbdo.intData();
+    Serial.print("Valor de SigningUp: ");
+    Serial.println(signingUp);
+
+    // Se SigningUp for 1, executa um loop até que mude para 0
+    if (signingUp == 1) {
+      Serial.println("SigningUp é 1, aguardando mudança para 0...");
+      while (signingUp == 1) {
+        // Re-verifica o valor de SigningUp no Firebase
+        Firebase.RTDB.getInt(&fbdo, "/SigningUp");
+        signingUp = fbdo.intData();
+        delay(1000);  // Ajuste o tempo conforme necessário
+      }
+      Serial.println("SigningUp mudou para 0, continua o loop principal.");
+    }
+  } else {
+    Serial.println("Falha ao obter o valor de SigningUp do Firebase.");
     Serial.println(fbdo.errorReason());
   }
 }
