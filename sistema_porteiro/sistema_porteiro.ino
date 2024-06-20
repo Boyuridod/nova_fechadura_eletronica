@@ -5,6 +5,7 @@
 #include <Firebase_ESP_Client.h>  // Inclui a biblioteca que faz conexão com Firebase
 #include <addons/TokenHelper.h>   // Fornece informações sobre geração de token.
 #include <addons/RTDBHelper.h>    // Fornece informações sobre payload do RTDB e outras funções auxiliares.
+#include <SD.h>
 
 // Definição das Portas
 
@@ -27,11 +28,13 @@ MFRC522::MIFARE_Key key;
 int portaIsFechada = 1;
 
 // Campainha
-#define Campainha D3
+#define Campainha 10
 
 // Para conexão com Wi-Fi
-const char* ssid = "BugWare";       // Nome da rede
-const char* password = "ej#bw@23";  // Senha da rede
+const char* ssid = "S23 Ultra de Vinicius Gabriel";       // Nome da rede
+const char* password = "pcgkkdr9y54r5qn";  // Senha da rede
+
+// const char* password = "ej#bw@23";  // Senha da rede
 
 // Conexão com Firebase
 
@@ -84,7 +87,7 @@ void setup() {
   pinMode(FechaduraPinA, OUTPUT);       // Configura D1 como saída
   pinMode(FechaduraPinB, OUTPUT);       // Configura D2 como saída
   pinMode(Sensor_Porta, INPUT_PULLUP);  // Configura D4 como entrada
-  pinMode(Campainha, INPUT_PULLUP);     // Configura D3 como entrada
+  pinMode(Campainha, INPUT_PULLUP);     // Configura A0 como entrada
 
   // Inicialização dos pinos
   digitalWrite(FechaduraPinA, LOW);  // Configuração para fechar a fechadura
@@ -95,10 +98,13 @@ void setup() {
 
 void loop() {
   // Verifica se a campainha foi acionada
-  if (digitalRead(Campainha)) {
-    Serial.println("Tem gente na porta");
-    delay(3000);
-  }
+
+  Serial.println(digitalRead(Campainha));
+
+  // if () {
+  //   Serial.println("Tem gente na porta");
+  //   delay(3000);
+  // }
 
   // Verifica se o Firebase está pronto
   if (Firebase.ready()) {
@@ -156,9 +162,10 @@ void loop() {
 
       fecha_fechadura();
     }
+
+    // Verifica a variável SigningUp no Firebase
+    verifica_SigningUp();
   }
-  // Verifica a variável SigningUp no Firebase
-  verifica_SigningUp();
 }
 
 // Funções
@@ -240,8 +247,6 @@ void verifica_abrePorta() {
       }
 
       fecha_fechadura();
-    } else {
-      fecha_fechadura();
     }
   } else {
     Serial.println("Falha ao obter o valor de abrePorta do Firebase.");
@@ -257,14 +262,50 @@ void verifica_SigningUp() {
 
     // Se SigningUp for 1, executa um loop até que mude para 0
     if (signingUp == 1) {
-      Serial.println("SigningUp é 1, aguardando mudança para 0...");
+      Serial.println("SigningUp é 1, aguardando leitura de cartão...");
+
       while (signingUp == 1) {
+        // Verifica se um novo cartão está presente
+        if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
+          String leitura = "";
+
+          // Concatena o UID do cartão lido
+          for (byte i = 0; i < mfrc522.uid.size; i++) {
+            if (i > 0) leitura.concat(" ");
+            leitura.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? "0" : ""));
+            leitura.concat(String(mfrc522.uid.uidByte[i], HEX));
+          }
+
+          leitura.toUpperCase();
+
+          // Interrompe o PICC
+          mfrc522.PICC_HaltA();
+
+          // Para a criptografia no PCD
+          mfrc522.PCD_StopCrypto1();
+
+          Serial.print("UID da tag: ");
+          Serial.println(leitura);
+
+          // Atualiza o valor no Firebase
+          if (Firebase.RTDB.setString(&fbdo, "ChaveRegistrada", leitura)) {
+            Serial.println("Valor atualizado com sucesso!");
+          } else {
+            Serial.println("Falha ao atualizar valor: " + fbdo.errorReason());
+          }
+        }
+
         // Re-verifica o valor de SigningUp no Firebase
-        Firebase.RTDB.getInt(&fbdo, "/SigningUp");
-        signingUp = fbdo.intData();
+        if (Firebase.RTDB.getInt(&fbdo, "/SigningUp")) {
+          signingUp = fbdo.intData();
+        } else {
+          Serial.println("Falha ao obter o valor de SigningUp do Firebase.");
+          Serial.println(fbdo.errorReason());
+          break;
+        }
+
         delay(1000);  // Ajuste o tempo conforme necessário
       }
-      Serial.println("SigningUp mudou para 0, continua o loop principal.");
     }
   } else {
     Serial.println("Falha ao obter o valor de SigningUp do Firebase.");
