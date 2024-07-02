@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1029942966294",
+    "firebase_url": "https://bancodochaves-default-rtdb.firebaseio.com",
+    "project_id": "bancodochaves",
+    "storage_bucket": "bancodochaves.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1029942966294:android:54a36e2209eff47e445d37",
+        "android_client_info": {
+          "package_name": "br.com.appchavecompose"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUiYGI7-oV9mmKp_6XHm5D2v9_zRVvJBU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
