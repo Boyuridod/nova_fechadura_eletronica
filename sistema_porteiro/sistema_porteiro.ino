@@ -31,8 +31,11 @@ int portaIsFechada = 1;
 #define Campainha 10
 
 // Para conexão com Wi-Fi
-const char* ssid = "S23 Ultra de Vinicius Gabriel";       // Nome da rede
-const char* password = "pcgkkdr9y54r5qn";  // Senha da rede
+// const char* ssid = "S23 Ultra de Vinicius Gabriel";       // Nome da rede
+// const char* password = "pcgkkdr9y54r5qn";  // Senha da rede
+
+const char* ssid = "Inside The Forest";       // Nome da rede
+const char* password = "youarealone";  // Senha da rede
 
 // const char* password = "ej#bw@23";  // Senha da rede
 
@@ -245,12 +248,14 @@ void verifica_abrePorta() {
         portaIsFechada = digitalRead(Sensor_Porta);
         delay(1000);
       }
-
-      fecha_fechadura();
+      //
+    }else{
+       fecha_fechadura();
     }
   } else {
     Serial.println("Falha ao obter o valor de abrePorta do Firebase.");
     Serial.println(fbdo.errorReason());
+    fecha_fechadura();
   }
 }
 
