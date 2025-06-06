@@ -62,5 +62,6 @@ Desenvolvido para a disciplina **Projetos Integrados para Engenharia 7° Períod
 
 ## 📄 Licença
 
-Projeto desenvolvido para fins acadêmicos e pessoais.  
+Projeto desenvolvido para fins acadêmicos e pessoais.
+Evite a cópia direta para garantir seu desenvolvimento e aprendizado.
 Não recomendado para uso comercial sem adaptações de segurança.
